@@ -1,0 +1,24 @@
+{
+    "name": "progminer/image-constructor",
+    "description": "Library for object oriented image generation",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eridan Domoratskiy",
+            "email": "eridan200@mail.ru"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
