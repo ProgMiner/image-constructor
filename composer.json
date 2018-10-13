@@ -12,10 +12,16 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "^7.0"
+        "php": "^7.1",
+        "php-ds/php-ds": "^1.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^7"
+    },
+    "autoload": {
+        "psr-4": {
+            "ImageConstructor\\": "lib"
+        }
     },
     "config": {
         "optimize-autoloader": true,
