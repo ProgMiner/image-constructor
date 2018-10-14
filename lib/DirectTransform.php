@@ -42,7 +42,7 @@ class DirectTransform implements Transform {
      * @link https://habr.com/post/98743/
      */
     protected function mixColors(Color $a, Color $b): Color {
-        $alpha = $b->a + (255 - $b->a) * $a->a;
+        $alpha = $b->a + (1 - $b->a) * $a->a;
 
         // To avoid divide on zero
         if ($alpha == 0) {
@@ -52,9 +52,9 @@ class DirectTransform implements Transform {
         $k = $b->a / $alpha;
 
         return new Color(
-            ($a->r - $b->r) * $k + $b->r,
-            ($a->g - $b->g) * $k + $b->g,
-            ($a->b - $b->b) * $k + $b->b,
+            $a->r + ($b->r - $a->r) * $k,
+            $a->g + ($b->g - $a->g) * $k,
+            $a->b + ($b->b - $a->b) * $k,
             $alpha
         );
     }

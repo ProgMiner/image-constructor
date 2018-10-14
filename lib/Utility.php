@@ -65,9 +65,7 @@ abstract class Utility {
 
         for ($x = 0; $x < $image->getSize()->key; ++$x) {
             for ($y = 0; $y < $image->getSize()->value; ++$y) {
-                $color = $image->getPixels()[$x][$y]->gdAllocate($gd);
-                imagesetpixel($gd, $x, $y, $color);
-                imagecolordeallocate($gd, $color);
+                imagesetpixel($gd, $x, $y, $image->getPixels()[$x][$y]->gdAllocate($gd));
             }
         }
 
@@ -78,18 +76,19 @@ abstract class Utility {
      * Converts GD image to Image
      *
      * @param resource $gd GD image
+     * @param bool $alpha If true tries to get alpha component of pixels
      * @param bool $destroy If true destroys GD image
      *
      * @return Image
      */
-    public static function gdToImage($gd, bool $destroy = true): Image {
+    public static function gdToImage($gd, bool $alpha = true, bool $destroy = true): Image {
         $pixels = [];
 
         for ($x = 0; $x < imagesx($gd); ++$x) {
             $pixels[$x] = [];
 
             for ($y = 0; $y < imagesy($gd); ++$y) {
-                $pixels[$x][$y] = Color::fromNumber(imagecolorat($gd, $x, $y));
+                $pixels[$x][$y] = Color::fromGD($gd, imagecolorat($gd, $x, $y));
             }
         }
 

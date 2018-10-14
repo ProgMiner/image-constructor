@@ -37,15 +37,15 @@ class Color implements Hashable {
      * @var $r int Red component from 0 to 255
      * @var $g int Green component from 0 to 255
      * @var $b int Blue component from 0 to 255
-     * @var $a int Alpha component from 0 to 255
+     * @var $a float Alpha component from 0 to 1
      */
     public $r, $g, $b, $a;
 
-    public function __construct(int $r, int $g, int $b, int $a = 255) {
+    public function __construct(int $r, int $g, int $b, float $a = 1) {
         $this->r = max(0, min($r, 255));
         $this->g = max(0, min($g, 255));
         $this->b = max(0, min($b, 255));
-        $this->a = max(0, min($a, 255));
+        $this->a = max(0, min($a, 1));
     }
 
     /**
@@ -54,7 +54,7 @@ class Color implements Hashable {
      * @return int
      */
     public function toNumber(): int {
-        $number = $this->a;
+        $number = (int) ($this->a * 255);
         $number <<= 8;
 
         $number += $this->r;
@@ -76,7 +76,7 @@ class Color implements Hashable {
      * @return int|bool Result of {@see imagecolorallocatealpha()} invocation
      */
     public function gdAllocate($image) {
-        return imagecolorallocatealpha($image, $this->r, $this->g, $this->b, $this->a);
+        return imagecolorallocatealpha($image, $this->r, $this->g, $this->b, 127 - (int) ($this->a * 127));
     }
 
     public function __toString() {
@@ -132,8 +132,27 @@ class Color implements Hashable {
         $r = ($number >>= 8) % 255;
         $a = $withAlpha?
             ($number >> 8) % 255:
-            1;
+            255;
 
-        return new Color($r, $g, $b, $a);
+        return new Color($r, $g, $b, $a / 255);
+    }
+
+    /**
+     * Makes Color from GD color index
+     *
+     * @param resource $image GD image
+     * @param int $color Color index
+     *
+     * @return Color
+     */
+    public static function fromGD($image, int $color): Color {
+        $components = imagecolorsforindex($image, $color);
+
+        return new Color(
+            $components['red'],
+            $components['green'],
+            $components['blue'],
+            (127 - $components['alpha']) / 127
+        );
     }
 }
