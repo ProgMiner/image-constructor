@@ -34,36 +34,67 @@ use Ds\Hashable;
 class Color implements Hashable {
 
     /**
-     * @var $r float Red component from 0 to 1
-     * @var $g float Green component from 0 to 1
-     * @var $b float Blue component from 0 to 1
-     * @var $a float Alpha component from 0 to 1
+     * @var $r int Red component from 0 to 255
+     * @var $g int Green component from 0 to 255
+     * @var $b int Blue component from 0 to 255
+     * @var $a int Alpha component from 0 to 255
      */
     public $r, $g, $b, $a;
 
-    public function __construct(float $r, float $g, float $b, float $a = 1) {
-        $this->r = $r;
-        $this->g = $g;
-        $this->b = $b;
-        $this->a = $a;
+    public function __construct(int $r, int $g, int $b, int $a = 255) {
+        $this->r = max(0, min($r, 255));
+        $this->g = max(0, min($g, 255));
+        $this->b = max(0, min($b, 255));
+        $this->a = max(0, min($a, 255));
+    }
+
+    /**
+     * Returns number representation of the color
+     *
+     * @return int
+     */
+    public function toNumber(): int {
+        $number = $this->a;
+        $number <<= 8;
+
+        $number += $this->r;
+        $number <<= 8;
+
+        $number += $this->g;
+        $number <<= 8;
+
+        $number += $this->b;
+
+        return $number;
+    }
+
+    /**
+     * Invokes {@see imagecolorallocatealpha()} for $image and current color
+     *
+     * @param resource $image GD image
+     *
+     * @return int|bool Result of {@see imagecolorallocatealpha()} invocation
+     */
+    public function gdAllocate($image) {
+        return imagecolorallocatealpha($image, $this->r, $this->g, $this->b, $this->a);
     }
 
     public function __toString() {
         if ($this->a === 1) {
             return sprintf(
                 'rgb(%d, %d, %d)',
-                $this->r * 255,
-                $this->g * 255,
-                $this->b * 255
+                $this->r,
+                $this->g,
+                $this->b
             );
         }
 
         return sprintf(
             'rgba(%d, %d, %d, %d)',
-            $this->r * 255,
-            $this->g * 255,
-            $this->b * 255,
-            $this->a * 255
+            $this->r,
+            $this->g,
+            $this->b,
+            $this->a
         );
     }
 
@@ -71,19 +102,7 @@ class Color implements Hashable {
      * @inheritdoc
      */
     public function hash() {
-        $hash = $this->r * 255;
-        $hash <<= 3;
-
-        $hash += $this->g * 255;
-        $hash <<= 3;
-
-        $hash += $this->b * 255;
-        $hash <<= 3;
-
-        $hash += $this->a * 255;
-        $hash <<= 3;
-
-        return $hash;
+        return $this->toNumber();
     }
 
     /**
@@ -97,5 +116,24 @@ class Color implements Hashable {
             $obj->b === $this->b &&
             $obj->a === $this->a
         );
+    }
+
+    /**
+     * Makes Color from number
+     *
+     * @param int $number
+     * @param bool $withAlpha If true tried to get alpha from number
+     *
+     * @return Color
+     */
+    public static function fromNumber(int $number, bool $withAlpha = true): Color {
+        $b = $number % 255;
+        $g = ($number >>= 8) % 255;
+        $r = ($number >>= 8) % 255;
+        $a = $withAlpha?
+            ($number >> 8) % 255:
+            1;
+
+        return new Color($r, $g, $b, $a);
     }
 }

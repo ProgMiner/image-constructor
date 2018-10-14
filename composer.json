@@ -13,6 +13,7 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
+        "ext-gd": "^7.1",
         "php-ds/php-ds": "^1.2"
     },
     "require-dev": {

@@ -24,6 +24,8 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
+use Ds\Pair;
+
 /**
  * Class DirectTransform
  *
@@ -40,7 +42,7 @@ class DirectTransform implements Transform {
      * @link https://habr.com/post/98743/
      */
     protected function mixColors(Color $a, Color $b): Color {
-        $alpha = $b->a + (1 - $b->a) * $a->a;
+        $alpha = $b->a + (255 - $b->a) * $a->a;
 
         // To avoid divide on zero
         if ($alpha == 0) {
@@ -65,9 +67,14 @@ class DirectTransform implements Transform {
             return clone $img;
         }
 
+        $size = new Pair(
+            min($img->getSize()->key, $bg->getSize()->key),
+            min($img->getSize()->value, $bg->getSize()->value)
+        );
+
         $pixels = $bg->getPixels();
-        for ($x = 0; $x < $img->getSize()->key; ++$x) {
-            for ($y = 0; $y < $img->getSize()->value; ++$y) {
+        for ($x = 0; $x < $size->key; ++$x) {
+            for ($y = 0; $y < $size->value; ++$y) {
                 $pixels[$x][$y] = $this->mixColors($pixels[$x][$y], $img->getPixels()[$x][$y]);
             }
         }

@@ -33,7 +33,7 @@ namespace ImageConstructor;
  */
 class BaseImage extends AbstractImage {
 
-    public function __construct(array $pixels = [[new Color(0, 0, 0)]]) {
+    public function __construct(array $pixels = []) {
         parent::__construct($pixels);
     }
 }

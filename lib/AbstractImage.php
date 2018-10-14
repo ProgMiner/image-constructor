@@ -43,8 +43,19 @@ abstract class AbstractImage implements Image {
      */
     protected $pixels;
 
-    public function __construct(array $pixels = [[new Color(0, 0, 0)]]) {
-        $this->size = new Pair(count($pixels[0] ?? []), count($pixels));
+    public function __construct(array $pixels = []) {
+        $pixels = array_values($pixels);
+
+        foreach ($pixels as &$line) {
+            $line = array_values($line);
+        }
+
+        // Minimal image size is 1x1px
+        if (count($pixels) < 1 || count($pixels[0]) < 1) {
+            $pixels = [[new Color(0, 0, 0, 0)]];
+        }
+
+        $this->size = new Pair(count($pixels), count($pixels[0]));
         $this->pixels = $pixels;
     }
 
