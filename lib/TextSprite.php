@@ -24,8 +24,6 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Pair;
-
 /**
  * Class TextSprite
  *
@@ -76,19 +74,27 @@ class TextSprite implements Sprite {
      */
     public function render(): Image {
         $ftbbox = imageftbbox($this->fontSize, 0, $this->fontFile, $this->text, $this->extraInfo);
-        $size = new Pair($ftbbox[2] - $ftbbox[6], $ftbbox[3] - $ftbbox[7]);
 
-        // Minimal GD image size is 1x1px
-        $size->key = max($size->key, 1);
-        $size->value = max($size->value, 1);
+        $width = max($ftbbox[2] - $ftbbox[6], 1);
+        $height = max($ftbbox[3] - $ftbbox[7], 1);
 
         // Getting an offset for the first symbol of text
         $ftbbox = imageftbbox($this->fontSize, 0, $this->fontFile, $this->text[0] ?? '', $this->extraInfo);
         $offset = $ftbbox[3] - $ftbbox[7];
 
-        $buffer = Utility::transparentGD($size);
-        imagefttext($buffer, $this->fontSize, 0, 0, $offset, $this->color->gdAllocate($buffer), $this->fontFile, $this->text, $this->extraInfo);
+        $image = Utility::transparentImage($width, $height);
+        imagefttext(
+            $image->getResource(),
+            $this->fontSize,
+            0,
+            0,
+            $offset,
+            $this->color->allocate($image->getResource()),
+            $this->fontFile,
+            $this->text,
+            $this->extraInfo
+        );
 
-        return Utility::gdToImage($buffer, true);
+        return $image;
     }
 }

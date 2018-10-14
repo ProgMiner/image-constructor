@@ -39,13 +39,13 @@ class ImageSprite implements Sprite {
     protected $image;
 
     public function __construct(Image $image) {
-        $this->image = $image;
+        $this->image = clone $image;
     }
 
     /**
      * @inheritdoc
      */
     public function render(): Image {
-        return $this->image;
+        return clone $this->image;
     }
 }

@@ -24,8 +24,6 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Pair;
-
 /**
  * Class DirectTransform
  *
@@ -38,23 +36,32 @@ use Ds\Pair;
  */
 class DirectTransform implements Transform {
 
+    private function a(Color $color): float {
+        return (127 - $color->a()) / 127;
+    }
+
     /**
      * @link https://habr.com/post/98743/
+     *
+     * @param Color $a
+     * @param Color $b
+     *
+     * @return Color
      */
     protected function mixColors(Color $a, Color $b): Color {
-        $alpha = $b->a + (1 - $b->a) * $a->a;
+        $alpha = $this->a($b) + (1 - $this->a($b)) * $this->a($a);
 
         // To avoid divide on zero
         if ($alpha == 0) {
             return new Color(0, 0, 0, 0);
         }
 
-        $k = $b->a / $alpha;
+        $k = $this->a($b) / $alpha;
 
         return new Color(
-            $a->r + ($b->r - $a->r) * $k,
-            $a->g + ($b->g - $a->g) * $k,
-            $a->b + ($b->b - $a->b) * $k,
+            $a->r() + ($b->r() - $a->r()) * $k,
+            $a->g() + ($b->g() - $a->g()) * $k,
+            $a->b() + ($b->b() - $a->b()) * $k,
             $alpha
         );
     }
@@ -67,18 +74,20 @@ class DirectTransform implements Transform {
             return clone $img;
         }
 
-        $size = new Pair(
-            min($img->getSize()->key, $bg->getSize()->key),
-            min($img->getSize()->value, $bg->getSize()->value)
-        );
+        $width = min($img->getWidth(), $bg->getWidth());
+        $height = min($img->getHeight(), $bg->getHeight());
 
-        $pixels = $bg->getPixels();
-        for ($x = 0; $x < $size->key; ++$x) {
-            for ($y = 0; $y < $size->value; ++$y) {
-                $pixels[$x][$y] = $this->mixColors($pixels[$x][$y], $img->getPixels()[$x][$y]);
+        $ret = clone $bg;
+        for ($x = 0; $x < $width; ++$x) {
+            for ($y = 0; $y < $height; ++$y) {
+                $ret->setPixelColor($x, $y, $this->mixColors($bg->getPixelColor($x, $y), $img->getPixelColor($x, $y)));
             }
         }
 
-        return new BaseImage($pixels);
+        // I don't know is this works:
+        //   imagealphablending($ret->getResource(), true);
+        //   imagecopy($ret->getResource(), $img->getResource(), 0, 0, 0, 0, $width, $height);
+
+        return $ret;
     }
 }

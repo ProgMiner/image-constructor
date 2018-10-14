@@ -24,73 +24,40 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Hashable;
-
 /**
  * Class Color
  *
  * @package ImageConstructor
  */
-class Color implements Hashable {
+class Color {
 
     /**
-     * @var $r int Red component from 0 to 255
-     * @var $g int Green component from 0 to 255
-     * @var $b int Blue component from 0 to 255
-     * @var $a float Alpha component from 0 to 1
+     * @var int $r Red component
+     * @var int $g Green component
+     * @var int $b Blue component
+     * @var int $a Alpha component in GD format
      */
-    public $r, $g, $b, $a;
+    protected $r, $g, $b, $a;
 
-    public function __construct(int $r, int $g, int $b, float $a = 1) {
-        $this->r = max(0, min($r, 255));
-        $this->g = max(0, min($g, 255));
-        $this->b = max(0, min($b, 255));
-        $this->a = max(0, min($a, 1));
+    public function __construct(int $r, int $g, int $b, int $a = 0) {
+        $this->r = min(max($r, 0), 255);
+        $this->b = min(max($g, 0), 255);
+        $this->g = min(max($b, 0), 255);
+        $this->a = min(max($a, 0), 127);
     }
 
     /**
-     * Returns number representation of the color
+     * @param Image|resource $image
      *
      * @return int
      */
-    public function toNumber(): int {
-        $number = (int) ($this->a * 255);
-        $number <<= 8;
-
-        $number += $this->r;
-        $number <<= 8;
-
-        $number += $this->g;
-        $number <<= 8;
-
-        $number += $this->b;
-
-        return $number;
-    }
-
-    /**
-     * Invokes {@see imagecolorallocatealpha()} for $image and current color
-     *
-     * @param resource $image GD image
-     *
-     * @return int|bool Result of {@see imagecolorallocatealpha()} invocation
-     */
-    public function gdAllocate($image) {
-        return imagecolorallocatealpha($image, $this->r, $this->g, $this->b, 127 - (int) ($this->a * 127));
-    }
-
-    public function __toString() {
-        if ($this->a === 1) {
-            return sprintf(
-                'rgb(%d, %d, %d)',
-                $this->r,
-                $this->g,
-                $this->b
-            );
+    public function allocate($image): int {
+        if ($image instanceof Image) {
+            $image = $image->getResource();
         }
 
-        return sprintf(
-            'rgba(%d, %d, %d, %d)',
+        return imagecolorallocatealpha(
+            $image,
             $this->r,
             $this->g,
             $this->b,
@@ -98,61 +65,44 @@ class Color implements Hashable {
         );
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function hash() {
-        return $this->toNumber();
+    public function r(): int {
+        return $this->r;
+    }
+
+    public function g(): int {
+        return $this->g;
+    }
+
+    public function b(): int {
+        return $this->b;
+    }
+
+    public function a(): int {
+        return $this->a;
+    }
+
+    public function __toString() {
+        return "Color($this->r, $this->g, $this->b, $this->a)";
     }
 
     /**
-     * @inheritdoc
-     */
-    public function equals($obj): bool {
-        return (
-            $obj instanceof Color &&
-            $obj->r === $this->r &&
-            $obj->g === $this->g &&
-            $obj->b === $this->b &&
-            $obj->a === $this->a
-        );
-    }
-
-    /**
-     * Makes Color from number
-     *
-     * @param int $number
-     * @param bool $withAlpha If true tried to get alpha from number
+     * @param Image|resource $image
+     * @param int            $index
      *
      * @return Color
      */
-    public static function fromNumber(int $number, bool $withAlpha = true): Color {
-        $b = $number % 255;
-        $g = ($number >>= 8) % 255;
-        $r = ($number >>= 8) % 255;
-        $a = $withAlpha?
-            ($number >> 8) % 255:
-            255;
+    public static function fromIndex($image, int $index): Color {
+        if ($image instanceof Image) {
+            $image = $image->getResource();
+        }
 
-        return new Color($r, $g, $b, $a / 255);
-    }
-
-    /**
-     * Makes Color from GD color index
-     *
-     * @param resource $image GD image
-     * @param int $color Color index
-     *
-     * @return Color
-     */
-    public static function fromGD($image, int $color): Color {
-        $components = imagecolorsforindex($image, $color);
+        $colors = imagecolorsforindex($image, $index);
 
         return new Color(
-            $components['red'],
-            $components['green'],
-            $components['blue'],
-            (127 - $components['alpha']) / 127
+            $colors['red'],
+            $colors['green'],
+            $colors['blue'],
+            $colors['alpha']
         );
     }
 }

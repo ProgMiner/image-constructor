@@ -24,8 +24,6 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Pair;
-
 /**
  * Class Utility
  *
@@ -40,62 +38,17 @@ abstract class Utility {
      *
      * @link http://php.net/manual/function.imagefill.php#110186
      *
-     * @param Pair $size Image size
+     * @param int $width
+     * @param int $height
      *
-     * @return resource GD image
+     * @return Image
      */
-    public static function transparentGD(Pair $size) {
-        $image = imagecreatetruecolor($size->key, $size->value);
+    public static function transparentImage(int $width, int $height): Image {
+        $image = imagecreatetruecolor(max($width, 1), max($height, 1));
         $transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
         imagefill($image, 0, 0, $transparent);
         imagesavealpha($image, true);
 
-        return $image;
-    }
-
-    /**
-     * Converts Image to GD image
-     *
-     * @param Image $image Image to convert
-     *
-     * @return resource GD image
-     */
-    public static function imageToGD(Image $image) {
-        $gd = self::transparentGD($image->getSize());
-
-        for ($x = 0; $x < $image->getSize()->key; ++$x) {
-            for ($y = 0; $y < $image->getSize()->value; ++$y) {
-                imagesetpixel($gd, $x, $y, $image->getPixels()[$x][$y]->gdAllocate($gd));
-            }
-        }
-
-        return $gd;
-    }
-
-    /**
-     * Converts GD image to Image
-     *
-     * @param resource $gd GD image
-     * @param bool $alpha If true tries to get alpha component of pixels
-     * @param bool $destroy If true destroys GD image
-     *
-     * @return Image
-     */
-    public static function gdToImage($gd, bool $alpha = true, bool $destroy = true): Image {
-        $pixels = [];
-
-        for ($x = 0; $x < imagesx($gd); ++$x) {
-            $pixels[$x] = [];
-
-            for ($y = 0; $y < imagesy($gd); ++$y) {
-                $pixels[$x][$y] = Color::fromGD($gd, imagecolorat($gd, $x, $y));
-            }
-        }
-
-        if ($destroy) {
-            imagedestroy($gd);
-        }
-
-        return new BaseImage($pixels);
+        return new Image($image);
     }
 }

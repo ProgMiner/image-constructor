@@ -25,15 +25,31 @@ SOFTWARE. */
 namespace ImageConstructor;
 
 /**
- * Class BaseImage
+ * Class CallableTextSprite
  *
- * Base image is used when new instance of Image class is needed internally.
+ * Sprite that calls a callable on rendering.
  *
  * @package ImageConstructor
  */
-class BaseImage extends AbstractImage {
+class CallableTextSprite extends TextSprite {
 
-    public function __construct(array $pixels = []) {
-        parent::__construct($pixels);
+    /**
+     * @var callable Callable that returns a text for rendering
+     */
+    protected $callable;
+
+    public function __construct(callable $callable, int $fontSize, Color $color, ?string $fontFile = null, array $extraInfo = []) {
+        parent::__construct('', $fontSize, $color, $fontFile, $extraInfo);
+
+        $this->callable = $callable;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function render(): Image {
+        $this->text = call_user_func($this->callable);
+
+        return parent::render();
     }
 }

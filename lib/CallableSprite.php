@@ -24,57 +24,28 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Pair;
-
 /**
- * Class AbstractImage
+ * Class CallableSprite
+ *
+ * Sprite that calls a callable on rendering.
  *
  * @package ImageConstructor
  */
-abstract class AbstractImage implements Image {
+class CallableSprite implements Sprite {
 
     /**
-     * @var Pair Pair of width and height
+     * @var callable Callable that returns an Image
      */
-    protected $size;
+    protected $callable;
 
-    /**
-     * @var Color[][] Matrix of pixels
-     */
-    protected $pixels;
-
-    public function __construct(array $pixels = []) {
-        $pixels = array_values($pixels);
-
-        foreach ($pixels as &$line) {
-            $line = array_values($line);
-        }
-
-        // Minimal image size is 1x1px
-        if (count($pixels) < 1 || count($pixels[0]) < 1) {
-            $pixels = [[new Color(0, 0, 0, 0)]];
-        }
-
-        $this->size = new Pair(count($pixels), count($pixels[0]));
-        $this->pixels = $pixels;
-    }
-
-    public function __clone() {
-        $this->size = clone $this->size;
-        $this->pixels = (new \ArrayObject($this->pixels))->getArrayCopy();
+    public function __construct(callable $callable) {
+        $this->callable = $callable;
     }
 
     /**
      * @inheritdoc
      */
-    public function getSize(): Pair {
-        return $this->size;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getPixels(): array {
-        return $this->pixels;
+    public function render(): Image {
+        return call_user_func($this->callable);
     }
 }
