@@ -24,58 +24,46 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Vector;
-
 /**
- * Class MultiTransform
+ * Class EvalCallable
  *
- * Transform that applies several transforms on rendering.
+ * Callable wrapper for evaluating code.
  *
  * @package ImageConstructor
  */
-class MultiTransform implements Transform, \Serializable {
+class EvalCallable implements \Serializable {
 
     /**
-     * @var Vector Transformations that will be applied when rendering
+     * @var string PHP code
      */
-    public $transforms;
+    public $code;
 
-    public function __construct(?Vector $transforms = null) {
-        $this->transforms = $transforms ?? new Vector();
+    public function __construct(string $code) {
+        $this->code = $code;
     }
 
     /**
-     * @inheritdoc
+     * @param $args array An array with variables that will be available for code
+     *
+     * @return mixed
      */
-    public function render(Image $img, ?Image $bg = null): Image {
-        $current = clone $img;
+    public function __invoke($args = []) {
+        extract($args);
 
-        foreach ($this->transforms as $transform) {
-            if (!$transform instanceof Transform) {
-                continue;
-            }
-
-            $current = $transform->render($current);
-        }
-
-        if (!is_null($bg)) {
-            $img = (new DirectTransform())->render($img, $bg);
-        }
-
-        return $img;
+        return eval($this->code);
     }
 
     /**
      * @inheritdoc
      */
     public function serialize() {
-        return serialize($this->transforms->toArray());
+        return serialize($this->code);
     }
 
     /**
      * @inheritdoc
      */
     public function unserialize($serialized) {
-        $this->transforms = new Vector(unserialize($serialized));
+        $this->code = unserialize($serialized);
     }
 }

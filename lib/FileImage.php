@@ -24,58 +24,37 @@ SOFTWARE. */
 
 namespace ImageConstructor;
 
-use Ds\Vector;
-
 /**
- * Class MultiTransform
+ * Class FileImage
  *
- * Transform that applies several transforms on rendering.
+ * Image that loads from file.
  *
  * @package ImageConstructor
  */
-class MultiTransform implements Transform, \Serializable {
+class FileImage extends Image implements \Serializable {
 
     /**
-     * @var Vector Transformations that will be applied when rendering
+     * @var string Image filename
      */
-    public $transforms;
+    protected $filename;
 
-    public function __construct(?Vector $transforms = null) {
-        $this->transforms = $transforms ?? new Vector();
-    }
+    public function __construct(string $filename) {
+        parent::__construct(imagecreatefromstring(file_get_contents($filename)));
 
-    /**
-     * @inheritdoc
-     */
-    public function render(Image $img, ?Image $bg = null): Image {
-        $current = clone $img;
-
-        foreach ($this->transforms as $transform) {
-            if (!$transform instanceof Transform) {
-                continue;
-            }
-
-            $current = $transform->render($current);
-        }
-
-        if (!is_null($bg)) {
-            $img = (new DirectTransform())->render($img, $bg);
-        }
-
-        return $img;
+        $this->filename = $filename;
     }
 
     /**
      * @inheritdoc
      */
     public function serialize() {
-        return serialize($this->transforms->toArray());
+        return $this->filename;
     }
 
     /**
      * @inheritdoc
      */
     public function unserialize($serialized) {
-        $this->transforms = new Vector(unserialize($serialized));
+        $this->__construct($serialized);
     }
 }

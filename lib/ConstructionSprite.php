@@ -33,7 +33,7 @@ use Ds\Map;
  *
  * @package ImageConstructor
  */
-class ConstructionSprite implements Sprite {
+class ConstructionSprite implements Sprite, \Serializable {
 
     /**
      * @var Map Map of child Sprites and Transforms for them
@@ -63,5 +63,23 @@ class ConstructionSprite implements Sprite {
         }
 
         return $current;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize() {
+        return serialize($this->sprites->pairs()->toArray());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized) {
+        $this->sprites = new Map();
+
+        foreach (unserialize($serialized) as $pair) {
+            $this->sprites->put($pair->key, $pair->value);
+        }
     }
 }

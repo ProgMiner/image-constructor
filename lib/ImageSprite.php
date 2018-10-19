@@ -31,7 +31,7 @@ namespace ImageConstructor;
  *
  * @package ImageConstructor
  */
-class ImageSprite implements Sprite {
+class ImageSprite implements Sprite, \Serializable {
 
     /**
      * @var Image
@@ -47,5 +47,19 @@ class ImageSprite implements Sprite {
      */
     public function render(): Image {
         return clone $this->image;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize() {
+        return serialize($this->image);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized) {
+        $this->image = unserialize($serialized);
     }
 }

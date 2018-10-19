@@ -29,7 +29,7 @@ namespace ImageConstructor;
  *
  * @package ImageConstructor
  */
-class Color {
+class Color implements \Serializable {
 
     /**
      * @var int $r Red component
@@ -104,5 +104,29 @@ class Color {
             $colors['blue'],
             $colors['alpha']
         );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serialize() {
+        return serialize([
+            $this->r,
+            $this->g,
+            $this->b,
+            $this->a
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function unserialize($serialized) {
+        list(
+            $this->r,
+            $this->g,
+            $this->b,
+            $this->a
+        ) = unserialize($serialized);
     }
 }
