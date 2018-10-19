@@ -57,13 +57,13 @@ class EvalCallable implements \Serializable {
      * @inheritdoc
      */
     public function serialize() {
-        return serialize($this->code);
+        return $this->code;
     }
 
     /**
      * @inheritdoc
      */
     public function unserialize($serialized) {
-        $this->code = unserialize($serialized);
+        $this->code = $serialized;
     }
 }
